@@ -6,6 +6,7 @@ import { createExpenseCommand } from "@c/expense";
 import { createIncomeCommand } from "@c/income";
 import { createCategoryCommand } from "@c/category";
 import { createSummaryCommand } from "@c/summary";
+import packageJSON from "../package.json" with { type: "json" };
 
 initDatabase();
 
@@ -14,7 +15,7 @@ const program = new Command();
 program
   .name("fin")
   .description("Personal finance tracker CLI")
-  .version("1.0.0");
+  .version(packageJSON.version);
 
 program.addCommand(createExpenseCommand());
 program.addCommand(createIncomeCommand());
