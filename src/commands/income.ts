@@ -1,0 +1,118 @@
+import { Command } from "commander";
+import {
+  addTransaction,
+  getCategories,
+  isCategoryDisabled,
+} from "@/lib/utils/db";
+import { validateDate, formatDate } from "@/lib/utils/validators";
+import { parseCSV } from "@/lib/utils/csv";
+
+export function createIncomeCommand() {
+  const income = new Command("income")
+    .description("Record income")
+    .argument("[amount]", "Income amount")
+    .option("-f, --file <path>", "Import from CSV file")
+    .option("--delimiter <char>", "CSV delimiter", ";")
+    .option("-d, --date <YYYY-MM-DD>", "Transaction date")
+    .option("-c, --category <name>", "Income category", "work")
+    .action(async (amount, options) => {
+      if (options.file) {
+        if (options.date || options.category !== "work") {
+          console.error(
+            "Error: --date and --category cannot be used with --file",
+          );
+          process.exit(1);
+        }
+        await importFromCSV(options.file, options.delimiter);
+      } else {
+        if (!amount) {
+          console.error("Error: amount is required");
+          process.exit(1);
+        }
+        await addSingleIncome(
+          parseFloat(amount),
+          options.category,
+          options.date,
+        );
+      }
+    });
+
+  return income;
+}
+
+async function addSingleIncome(
+  amount: number,
+  category: string,
+  dateStr?: string,
+) {
+  if (isNaN(amount) || amount <= 0) {
+    console.error("Error: Invalid amount");
+    process.exit(1);
+  }
+
+  const categories = getCategories("income");
+  const validCategory = categories.find((c) => c.name === category);
+
+  if (!validCategory) {
+    console.error(`Error: Category '${category}' does not exist`);
+    process.exit(1);
+  }
+
+  if (isCategoryDisabled(category)) {
+    console.error(`Error: Category '${category}' is disabled`);
+    process.exit(1);
+  }
+
+  const date = dateStr || formatDate(new Date());
+  if (!validateDate(date)) {
+    console.error("Error: Invalid date format. Use YYYY-MM-DD");
+    process.exit(1);
+  }
+
+  addTransaction({
+    type: "income",
+    amount,
+    category,
+    date,
+  });
+
+  console.log(`✓ Income recorded: $${amount} in ${category} on ${date}`);
+}
+
+async function importFromCSV(filePath: string, delimiter: string) {
+  try {
+    const rows = parseCSV(filePath, delimiter);
+    let successCount = 0;
+
+    for (const row of rows) {
+      const amount = parseFloat(row.amount);
+      if (isNaN(amount) || amount <= 0) {
+        console.warn(`Skipping invalid amount: ${row.amount}`);
+        continue;
+      }
+
+      if (!validateDate(row.date)) {
+        console.warn(`Skipping invalid date: ${row.date}`);
+        continue;
+      }
+
+      if (isCategoryDisabled(row.category)) {
+        console.warn(`Skipping disabled category: ${row.category}`);
+        continue;
+      }
+
+      addTransaction({
+        type: "income",
+        amount,
+        category: row.category,
+        date: row.date,
+      });
+      successCount++;
+    }
+
+    console.log(`✓ Imported ${successCount} income(s) from ${filePath}`);
+  } catch (error: any) {
+    console.error(`Error importing CSV: ${error.message}`);
+    process.exit(1);
+  }
+}
