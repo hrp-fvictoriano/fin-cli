@@ -1,15 +1,11 @@
-# fin-cli
+# Fin CLI
 
-To install dependencies:
+To build and use
 
-```bash
-bun install
+```sh
+bun run build
+
+bun link #bun link --global
 ```
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+The Sqlite database lives in `~/.fin-cli/fin.db`
