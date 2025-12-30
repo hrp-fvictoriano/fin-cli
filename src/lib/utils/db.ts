@@ -94,6 +94,11 @@ export function disableCategory(name: string) {
   return stmt.run(name);
 }
 
+export function enableCategory(name: string) {
+  const stmt = db.prepare("UPDATE categories SET disabled = 0 WHERE name = ?");
+  return stmt.run(name);
+}
+
 export function isCategoryDisabled(name: string): boolean {
   const stmt = db.prepare("SELECT disabled FROM categories WHERE name = ?");
   const result = stmt.get(name) as { disabled: number } | undefined;

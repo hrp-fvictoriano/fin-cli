@@ -1,5 +1,10 @@
 import { Command } from "commander";
-import { getCategories, addCategory, disableCategory } from "@/lib/utils/db";
+import {
+  getCategories,
+  addCategory,
+  disableCategory,
+  enableCategory,
+} from "@/lib/utils/db";
 import Table from "cli-table3";
 
 export function createCategoryCommand() {
@@ -8,9 +13,12 @@ export function createCategoryCommand() {
   cat
     .option("-l, --list", "List all categories")
     .option("-d, --disable <name>", "Disable a category")
+    .option("-e, --enable <name>", "Enable a disabled category")
     .action((options) => {
       if (options.list && options.disable) {
-        console.error("Error: Cannot use --list and --disable together");
+        console.error(
+          "Error: Options --list, --disable, and --enable are mutually exclusive",
+        );
         process.exit(1);
       }
 
@@ -18,6 +26,8 @@ export function createCategoryCommand() {
         listCategories();
       } else if (options.disable) {
         disableCategoryAction(options.disable);
+      } else if (options.enable) {
+        enableCategory(options.enable);
       } else {
         cat.help();
       }
