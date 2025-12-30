@@ -8,7 +8,9 @@
     "fin": "./dist/index.js"
   },
   "scripts": {
+    "clean": "bun unlink && rm -rf dist",
     "build": "bun build src/index.ts --outdir dist --target bun",
+    "relink": "bun run clean && bun run build && bun link",
     "dev": "bun run src/index.ts"
   },
   "devDependencies": {
