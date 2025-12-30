@@ -109,7 +109,12 @@ function generateSummary(options: any) {
     });
 
     summaryData.forEach((row) => {
-      table.push([row.category, row.income, row.expense, row.net]);
+      table.push([
+        row.category,
+        "$" + row.income,
+        "$" + row.expense,
+        "$" + row.net,
+      ]);
     });
 
     console.log(table.toString());
