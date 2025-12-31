@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name("fin")
   .description("Personal finance tracker CLI")
-  .version(packageJSON.version);
+  .version(packageJSON.version, "-v, --version", "Current version of fin");
 
 program.addCommand(createExpenseCommand());
 program.addCommand(createIncomeCommand());
